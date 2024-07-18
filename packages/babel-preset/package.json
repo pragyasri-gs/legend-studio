@@ -1,6 +1,6 @@
 {
   "name": "@finos/babel-preset-legend-studio",
-  "version": "2.0.67",
+  "version": "2.0.69",
   "description": "Legend Studio Babel preset",
   "keywords": [
     "legend",
@@ -30,18 +30,18 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "7.24.7",
+    "@babel/helper-plugin-utils": "7.24.8",
     "@babel/plugin-syntax-import-attributes": "7.24.7",
-    "@babel/preset-env": "7.24.7",
+    "@babel/preset-env": "7.24.8",
     "@babel/preset-react": "7.24.7",
     "@babel/preset-typescript": "7.24.7",
-    "@babel/runtime": "7.24.7",
+    "@babel/runtime": "7.24.8",
     "react-refresh": "0.14.2"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
-    "rimraf": "5.0.8",
+    "rimraf": "6.0.1",
     "typescript": "5.5.3"
   },
   "peerDependencies": {

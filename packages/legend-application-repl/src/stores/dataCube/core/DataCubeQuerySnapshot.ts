@@ -25,51 +25,17 @@ import {
   type PlainObject,
   type Writable,
 } from '@finos/legend-shared';
-
-export enum DataCubeQuerySnapshotAggregateFunction {
-  AVERAGE = 'average',
-  COUNT = 'count',
-  DISTINCT = 'distinct',
-  FIRST = 'first',
-  JOIN_STRINGS = 'joinStrings',
-  LAST = 'last',
-  MAX = 'max',
-  MIN = 'min',
-  SUM = 'sum',
-  STD_DEV_POPULATION = 'stdDevPopulation',
-  STD_DEV_SAMPLE = 'stdDevSample',
-  UNIQUE_VALUE_ONLY = 'uniqueValueOnly',
-}
-
-export enum DataCubeQuerySnapshotFilterOperation {
-  EQUAL = 'equal',
-  NOT_EQUAL = 'notEqual',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  BLANK = 'isEmpty',
-  NOT_BLANK = 'isNotEmpty',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
-  STARTS_WITH = 'startsWith',
-  ENDS_WITH = 'endsWith',
-}
-
-export enum DataCubeQuerySnapshotSortOperation {
-  ASCENDING = 'ascending',
-  DESCENDING = 'descending',
-}
-
-export enum DataCubeQueryFilterGroupOperation {
-  AND = 'AND',
-  OR = 'OR',
-}
+import type {
+  DataCubeAggregateFunction,
+  DataCubeQueryFilterGroupOperation,
+  DataCubeQueryFilterOperation,
+  DataCubeQuerySortOperation,
+} from './DataCubeQueryEngine.js';
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: unknown;
-    operation: DataCubeQuerySnapshotFilterOperation;
+    operation: DataCubeQueryFilterOperation;
   };
 
 export type DataCubeQuerySnapshotFilter = {
@@ -92,12 +58,12 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: DataCubeQuerySnapshotSortOperation;
+  operation: DataCubeQuerySortOperation;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    function: DataCubeQuerySnapshotAggregateFunction;
+    function: DataCubeAggregateFunction;
   };
 
 export type DataCubeQuerySnapshotGroupBy = {
@@ -116,7 +82,7 @@ export type DataCubeQuerySnapshotData = {
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: PlainObject<DataCubeConfiguration>;
-  originalColumns: DataCubeQuerySnapshotColumn[];
+  sourceColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
   groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
@@ -154,13 +120,13 @@ export class DataCubeQuerySnapshot {
       runtime,
       sourceQuery,
       configuration,
-      originalColumns: [],
+      sourceColumns: [],
       leafExtendedColumns: [],
+      selectColumns: [],
       filter: undefined,
       groupBy: undefined,
       pivot: undefined,
       groupExtendedColumns: [],
-      selectColumns: [],
       sortColumns: [],
       limit: undefined,
     };
@@ -188,23 +154,18 @@ export class DataCubeQuerySnapshot {
    */
   stageCols(stage: DataCubeQuerySnapshotStage): DataCubeQuerySnapshotColumn[] {
     switch (stage) {
-      case 'leaf-extend':
-        return [...this.data.originalColumns];
       case 'filter':
+      case 'leaf-extend':
+        return [...this.data.sourceColumns];
+      case 'select':
+        return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
       case 'aggregation':
-        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+        return [...this.data.selectColumns];
       case 'group-extend':
         // TODO: @akphi - add pivot columns
-        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
-      case 'select':
-        // TODO: @akphi - add pivot columns
-        return [
-          ...this.data.originalColumns,
-          ...this.data.leafExtendedColumns,
-          ...this.data.groupExtendedColumns,
-        ];
-      case 'sort':
         return [...this.data.selectColumns];
+      case 'sort':
+        return [...this.data.selectColumns, ...this.data.groupExtendedColumns];
       default:
         throw new IllegalStateError(`Unknown stage '${stage}'`);
     }

@@ -14,45 +14,119 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
+import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeEditorState } from './DataCubeEditorState.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export abstract class DataCubeEditorColumnsSelectorColumnState {
-  abstract get name(): string;
-  resetWhenMadeAvailable(): void {
-    // do nothing
+export class DataCubeEditorColumnsSelectorColumnState {
+  readonly name: string;
+  readonly type: string;
+
+  constructor(name: string, type: string) {
+    this.name = name;
+    this.type = type;
   }
 }
 
-export class DataCubeEditorColumnsSelectorState<
+export enum DataCubeEditorColumnsSelectorColumnsVisibility {
+  VISIBLE = 'visible',
+  VISIBLE_WITH_WARNING = 'visible-with-warning',
+  HIDDEN = 'hidden',
+}
+
+export abstract class DataCubeEditorColumnsSelectorState<
   T extends DataCubeEditorColumnsSelectorColumnState,
 > {
-  availableColumns: T[] = [];
+  readonly dataCube!: DataCubeState;
+  readonly editor!: DataCubeEditorState;
+
   selectedColumns: T[] = [];
+
   availableColumnsSearchText = '';
   selectedColumnsSearchText = '';
 
-  constructor() {
+  readonly onChange?:
+    | ((selector: DataCubeEditorColumnsSelectorState<T>) => void)
+    | undefined;
+  columnsVisibility!: DataCubeEditorColumnsSelectorColumnsVisibility;
+
+  constructor(
+    editor: DataCubeEditorState,
+    options?: {
+      initialColumnsVisibility?:
+        | DataCubeEditorColumnsSelectorColumnsVisibility
+        | undefined;
+      onChange?:
+        | ((select: DataCubeEditorColumnsSelectorState<T>) => void)
+        | undefined;
+    },
+  ) {
     makeObservable(this, {
-      availableColumns: observable,
+      availableColumns: computed,
+      availableColumnsForDisplay: computed,
+      selectedColumnsForDisplay: computed,
+
       selectedColumns: observable,
-      availableColumnsSearchText: observable,
-      selectedColumnsSearchText: observable,
-      setAvailableColumns: action,
       setSelectedColumns: action,
-      setSelectedColumnsSearchText: action,
+
+      availableColumnsSearchText: observable,
       setAvailableColumnsSearchText: action,
+
+      selectedColumnsSearchText: observable,
+      setSelectedColumnsSearchText: action,
+
+      columnsVisibility: observable,
+      setColumnsVisibility: action,
     });
+
+    this.editor = editor;
+    this.dataCube = editor.dataCube;
+    this.onChange = options?.onChange;
+    this.columnsVisibility =
+      options?.initialColumnsVisibility ??
+      DataCubeEditorColumnsSelectorColumnsVisibility.VISIBLE;
   }
 
-  setAvailableColumns(val: T[]): void {
-    this.availableColumns = val
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name));
-    this.availableColumns.forEach((column) => column.resetWhenMadeAvailable());
+  setColumnsVisibility(
+    visibility: DataCubeEditorColumnsSelectorColumnsVisibility,
+  ): void {
+    this.columnsVisibility = visibility;
+  }
+
+  abstract get availableColumns(): T[];
+
+  get availableColumnsForDisplay(): T[] {
+    return this.availableColumns
+      .filter(
+        (column) =>
+          !this.selectedColumns.find((col) => column.name === col.name),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(
+        (column) =>
+          this.columnsVisibility !==
+            DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+          !this.editor.columnProperties.columns.find(
+            (col) => col.name === column.name,
+          )?.hideFromView,
+      );
+  }
+
+  get selectedColumnsForDisplay(): T[] {
+    return this.selectedColumns.filter(
+      (column) =>
+        this.columnsVisibility !==
+          DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+        !this.editor.columnProperties.columns.find(
+          (col) => col.name === column.name,
+        )?.hideFromView,
+    );
   }
 
   setSelectedColumns(val: T[]): void {
-    this.selectedColumns = val;
+    this.selectedColumns = val.map((col) => this.cloneColumn(col));
+    this.onChange?.(this);
   }
 
   setAvailableColumnsSearchText(val: string): void {
@@ -63,11 +137,12 @@ export class DataCubeEditorColumnsSelectorState<
     this.selectedColumnsSearchText = val;
   }
 
-  getAvailableColumn(colName: string): T | undefined {
-    return this.availableColumns.find((col) => col.name === colName);
+  getColumn(colName: string): T {
+    return guaranteeNonNullable(
+      this.availableColumns.find((col) => col.name === colName),
+      `Can't find column '${colName}'`,
+    );
   }
 
-  getSelectedColumn(colName: string): T | undefined {
-    return this.selectedColumns.find((col) => col.name === colName);
-  }
+  abstract cloneColumn(column: T): T;
 }

@@ -36,7 +36,6 @@ import {
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortOperation,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -47,6 +46,7 @@ import {
   type Clazz,
 } from '@finos/legend-shared';
 import {
+  DataCubeQuerySortOperation,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -332,16 +332,21 @@ export function validateAndBuildQuerySnapshot(
   );
   const data = snapshot.data;
   const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
-  const _col = (colSpec: V1_ColSpec) =>
-    guaranteeNonNullable(colsMap.get(colSpec.name));
+  const _col = (colSpec: V1_ColSpec) => {
+    const column = guaranteeNonNullable(colsMap.get(colSpec.name));
+    return {
+      name: column.name,
+      type: column.type,
+    };
+  };
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.originalColumns = baseQuery.source.columns.map((col) => ({
+  data.sourceColumns = baseQuery.source.columns.map((col) => ({
     name: col.name,
     type: col.type,
   }));
-  data.originalColumns.map((col) => colsMap.set(col.name, col));
+  data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- FILTER ---------------------------------
   // TODO: @akphi - implement this
@@ -383,8 +388,8 @@ export function validateAndBuildQuerySnapshot(
           ..._col(_colSpecParam(sortColFunc, 0)),
           operation:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySnapshotSortOperation.ASCENDING
-              : DataCubeQuerySnapshotSortOperation.DESCENDING,
+              ? DataCubeQuerySortOperation.ASCENDING
+              : DataCubeQuerySortOperation.DESCENDING,
         };
       },
     );

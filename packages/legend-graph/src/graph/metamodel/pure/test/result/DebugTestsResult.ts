@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { AtomicTest, TestSuite } from '../Test.js';
+import type { Testable } from '../Testable.js';
 
-@import url('@finos/legend-art/lib/fonts.css');
-@import url('@finos/legend-application/lib/index.css');
-// @import url('@finos/legend-lego/lib/index.css');
+export abstract class TestDebug {
+  testable!: Testable;
+  parentSuite: TestSuite | undefined;
+  atomicTest: AtomicTest;
+  error: string | undefined;
 
-@import url('@finos/legend-application-repl/lib/index.css');
+  constructor(testSuite: TestSuite | undefined, atomicTestId: AtomicTest) {
+    this.parentSuite = testSuite;
+    this.atomicTest = atomicTestId;
+  }
+}
 
-html {
-  box-sizing: border-box;
-  font-family: Roboto, sans-serif;
-  overflow-y: hidden;
+export class TestExecutionPlanDebug extends TestDebug {
+  executionPlan: object | undefined;
+  debug: string[] | undefined;
+}
+
+export class UnknownTestDebug extends TestDebug {
+  value!: object;
 }

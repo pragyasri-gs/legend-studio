@@ -40,6 +40,14 @@ type GridClientRowData = {
   [key: string]: GridClientCellValue;
 };
 
+export enum DataCubeGridClientExportFormat {
+  CSV = 'CSV',
+  EXCEL = 'EXCEL',
+  PLAIN_TEXT = 'PLAIN_TEXT',
+  HTML = 'HTML',
+  PDF = 'PDF',
+}
+
 export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
   ROOT = 'data-cube-grid.ag-theme-balham',
   HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
@@ -84,6 +92,7 @@ export const generateBackgroundColorUtilityClassName = (
 ) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
 
+export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;

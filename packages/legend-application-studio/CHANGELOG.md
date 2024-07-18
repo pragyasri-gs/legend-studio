@@ -1,5 +1,19 @@
 # @finos/legend-application-studio
 
+## 28.18.2
+
+## 28.18.1
+
+### Patch Changes
+
+- [#3337](https://github.com/finos/legend-studio/pull/3337) [`c9fb799`](https://github.com/finos/legend-studio/commit/c9fb7994e5c8d89622faa0a3b761eedd2d8562e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use exact search on first filtering of load projects.
+
+## 28.18.0
+
+### Minor Changes
+
+- [#3265](https://github.com/finos/legend-studio/pull/3265) [`beb5599`](https://github.com/finos/legend-studio/commit/beb5599ea58831487321c4bcaf08a19ac8f9af75) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add debug option in mapping tests which shows execution plan and debug log + error when generating exec plan.
+
 ## 28.17.18
 
 ## 28.17.17

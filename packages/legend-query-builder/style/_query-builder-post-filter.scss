@@ -23,13 +23,13 @@
   }
 
   &__free-drop-zone {
+    height: 100%;
+
     &__container {
       min-height: 3.8rem;
       height: 100%;
       padding: 0.5rem;
     }
-
-    height: 100%;
   }
 
   &__node__block {
@@ -61,7 +61,7 @@
 
     &--condition {
       width: 100%;
-      padding: 0.25rem 0 0.25rem 0.5rem;
+      padding: 0.25rem 0;
 
       &:hover {
         background: var(--color-dark-blue-shade-100);
@@ -158,6 +158,7 @@
   &__node__children {
     @include flexVCenter;
 
+    width: calc(100% - query-builder-filter.$group-node-width);
     height: 100%;
     flex: 1;
     flex-direction: column;
@@ -243,6 +244,7 @@
 
     width: 100%;
     height: 100%;
+    padding: 0 0.2rem;
 
     &__property {
       @include flexVCenter;
@@ -301,6 +303,11 @@
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
+
+      .value-spec-editor {
+        width: 10rem;
+        flex: 1;
+      }
     }
   }
 }
@@ -349,6 +356,7 @@
   &__property {
     @include ellipsisTextOverflow;
 
+    color: var(--color-light-grey-200);
     padding: 0 1rem;
     font-size: 1.2rem;
     font-weight: 700;
@@ -401,5 +409,11 @@
     &:hover {
       color: var(--color-light-grey-0);
     }
+  }
+}
+
+.dnd__entry-dropzone__placeholder__content--children {
+  .query-builder-post-filter-tree__condition-node {
+    padding: 0;
   }
 }
